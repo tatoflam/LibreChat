@@ -55,6 +55,11 @@ export class MCPManager {
     this.processMCPEnv = processMCPEnv; // Store the function
     this.mcpConfigs = mcpServers;
 
+    // Add an initial delay to allow MCP servers to start up
+    this.logger.info('[MCP] Waiting for MCP servers to start up...');
+    await new Promise((resolve) => setTimeout(resolve, 10000)); // 10 second initial delay
+    this.logger.info('[MCP] Starting connection attempts to MCP servers');
+
     const entries = Object.entries(mcpServers);
     const initializedServers = new Set();
     const connectionResults = await Promise.allSettled(
@@ -129,8 +134,14 @@ export class MCPManager {
 
   /** Generic server initialization logic */
   private async initializeServer(connection: MCPConnection, logPrefix: string): Promise<void> {
-    const maxAttempts = 3;
+    const maxAttempts = 10;  // Increased from 3 to 10 for more connection retry attempts
     let attempts = 0;
+
+    // Add additional delay for gdrive-rag server
+    if (connection.serverName === 'gdrive-rag') {
+      this.logger.info(`${logPrefix} Adding additional delay for gdrive-rag server...`);
+      await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second additional delay
+    }
 
     while (attempts < maxAttempts) {
       try {

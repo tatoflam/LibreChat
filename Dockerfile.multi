@@ -42,6 +42,8 @@ FROM base AS data-schemas-build
 WORKDIR /app/packages/data-schemas
 COPY packages/data-schemas ./
 COPY --from=data-provider-build /app/packages/data-provider/dist /app/packages/data-provider/dist
+RUN mkdir -p logs && \
+    chown -R node:node logs
 RUN npm run build
 
 # Client build
